@@ -4,9 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class RegisterDTO {
-    @NotNull(message = "Parolni kiriting")
-    private String fullName;
+public class UserDto {
 
     @NotNull(message = "Parolni kiriting")
     private String username;
@@ -14,6 +12,7 @@ public class RegisterDTO {
     @NotNull(message = "Parolni kiriting")
     private String password;
 
-    @NotNull(message = "Parolni kiriting")
-    private String prePassword;
+    private Integer roleId;
+
+
 }

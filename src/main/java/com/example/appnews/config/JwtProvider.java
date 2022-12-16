@@ -1,37 +1,44 @@
-package com.example.atmapp.security.JWT;
+package com.example.appnews.config;
 
-import com.example.atmapp.entity.Role;
-import io.jsonwebtoken.Jwt;
+import com.example.appnews.entity.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.config.annotation.rsocket.RSocketSecurity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.Set;
-
 @Component
 public class JwtProvider {
-    private static final String secretKey="secReTKeyy";
-    public String gerateToken(String username, Set<Role> roles){
+    @Value("${app.jwt.secret}")
+    private String secretKey;
+    public String gerateToken(String username, Role role){
 
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("role",role);
 
         String token = Jwts
                 .builder()
-                .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 4))
-                .claim("roles", roles)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 ))
+                .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
-        return "Bearer "+token;
+        return token;
     }
 
-    public String parserToken(String token){
-        return Jwts
+public String parserToken (String token){
+    try {
+        String subject = Jwts
                 .parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
-                .getBody().getSubject();
+                .getBody()
+                .getSubject();
+        return subject;
     }
+    catch (Exception e){
+        return null;
+    }
+}
 }

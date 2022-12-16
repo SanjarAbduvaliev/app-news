@@ -1,10 +1,11 @@
-package com.example.atmapp.security.JWT;
+package com.example.appnews.config;
 
-import com.example.atmapp.service.TransferAction;
+import com.example.appnews.serivice.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,19 +17,26 @@ import java.io.IOException;
 
 @Component
 public class JwtFilter  extends OncePerRequestFilter {
+
+    private  final JwtProvider jwtProvider;
+
+    private final AuthService authService;
     @Autowired
-    JwtProvider jwtProvider;
-    @Autowired
-    TransferAction transferAction;
+    JwtFilter (JwtProvider jwtProvider, AuthService authService){
+        this.jwtProvider=jwtProvider;
+        this.authService=authService;
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NotNull HttpServletRequest request,
+                                    @NotNull HttpServletResponse response,
+                                    @NotNull FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
         if (authorization!=null&&authorization.startsWith("Bearer")){
             String token = authorization.substring(7);
-            String cardNumber = jwtProvider.parserToken(token);
-            if (!cardNumber.isEmpty()){
-                UserDetails cardUserDetails = transferAction.loadUserByUsername(cardNumber);
+            String username = jwtProvider.parserToken(token);
+            if (!username.isEmpty()){
+                UserDetails cardUserDetails = authService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken=new UsernamePasswordAuthenticationToken(
                         cardUserDetails,
                         null,
